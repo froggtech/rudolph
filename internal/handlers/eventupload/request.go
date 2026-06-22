@@ -49,7 +49,8 @@ func parseRequest(request events.APIGatewayProxyRequest) (machineID string, pars
 
 // EventUploadRequest encapsulation of an /eventupload POST body sent by a Santa sensor
 type EventUploadRequest struct {
-	Events []EventUploadEvent `json:"events"`
+	Events           []EventUploadEvent `json:"events"`
+	FileAccessEvents []FileAccessEvent  `json:"fileAccessEvents"`
 }
 
 // EventUploadEvent is a single event entry
@@ -90,6 +91,39 @@ type SigningEntry struct {
 	ValidFrom          int    `json:"valid_from"`
 	OrganizationalUnit string `json:"ou"`
 	SHA256             string `json:"sha256"`
+}
+
+// FileAccessEvent is a single file access authorization event sent by NPS Santa.
+// Field names use camelCase to match proto3 JSON serialization from the NPS Santa sync service.
+type FileAccessEvent struct {
+	RuleVersion  string             `json:"ruleVersion"`
+	RuleName     string             `json:"ruleName"`
+	Target       string             `json:"target"`
+	AccessTime   float64            `json:"accessTime"`
+	Decision     string             `json:"decision"`
+	RuleID       int64              `json:"ruleId,omitempty"`
+	ProcessChain []FileAccessProcess `json:"processChain"`
+}
+
+// FileAccessProcess is a process entry in a FileAccessEvent's process chain.
+type FileAccessProcess struct {
+	FilePath     string           `json:"filePath"`
+	FileSHA256   string           `json:"fileSha256"`
+	CDHash       string           `json:"cdhash"`
+	SigningID     string           `json:"signingId"`
+	TeamID       string           `json:"teamId"`
+	PID          int              `json:"pid"`
+	SigningChain []FileAccessCert `json:"signingChain"`
+}
+
+// FileAccessCert is a certificate entry in a FileAccessProcess signing chain.
+type FileAccessCert struct {
+	SHA256     string  `json:"sha256"`
+	CN         string  `json:"cn"`
+	Org        string  `json:"org"`
+	OU         string  `json:"ou"`
+	ValidFrom  float64 `json:"validFrom"`
+	ValidUntil float64 `json:"validUntil"`
 }
 
 // EventPayload represents derived metadata for events uploaded with the UploadEvent endpoint.

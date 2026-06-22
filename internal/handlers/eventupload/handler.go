@@ -86,7 +86,7 @@ func (h *PostEventuploadHandler) Handle(request events.APIGatewayProxyRequest) (
 	}
 
 	if err == nil && h.enableLambda {
-		err = sendToLambda(ctx, h.lambdaClient, machineID, eventsRequest.Events)
+		err = sendToLambda(ctx, h.lambdaClient, machineID, eventsRequest.Events, eventsRequest.FileAccessEvents)
 	}
 
 	if err != nil {
