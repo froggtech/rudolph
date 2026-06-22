@@ -1,0 +1,36 @@
+name: Deploy Event Forwarder Lambda
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "lambda/event_forwarder/**"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Build and upload event forwarder zip
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::266408865967:role/GitHubActionsRudolphEventForwarderRole
+          aws-region: us-west-2
+
+      - name: Build zip
+        run: |
+          cd lambda/event_forwarder
+          zip -j event_forwarder.zip main.py
+
+      - name: Upload to S3
+        run: |
+          aws s3 cp lambda/event_forwarder/event_forwarder.zip \
+            s3://rudolph-it-development-lambda-artifacts/event_forwarder/event_forwarder.zip
